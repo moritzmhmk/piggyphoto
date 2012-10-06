@@ -13,14 +13,11 @@ retries = 1
 # This is run if gp_camera_init returns -60 (Could not lock the device) and retries >= 1.
 unmount_cmd = 'gvfs-mount -s gphoto2'
 
+#libgphoto2dll = 'libgphoto2.so.6'
 #libgphoto2dll = 'libgphoto2.so.2.4.0'
+#libgphoto2dll = 'libgphoto2.so.2.4'
+#libgphoto2dll = 'libgphoto2.so.2'
 libgphoto2dll = 'libgphoto2.so'
-# 2.4.6
-#libgphoto2dll = '/usr/lib/libgphoto2.so'
-# 2.4.8
-#libgphoto2dll = '/usr/local/lib/libgphoto2.so.2'
-# SVN
-#libgphoto2dll = '/usr/local/lib/libgphoto2.so.6'
 
 import re
 import ctypes
@@ -41,7 +38,7 @@ def library_version(verbose = True):
         v += '%s\n' % s
     return v
 
-import os, string, time
+import os, time
 from ptp import *
 
 PTR = ctypes.pointer
@@ -494,11 +491,28 @@ class cameraList(object):
                 il.count()
                 al = cameraAbilitiesList()
                 al.detect(il, xlist)
+
+                # begin USB bug code
+                # with libgphoto 2.4.8, sometimes one attached camera returns
+                # one path "usb:" and sometimes two paths "usb:" and "usb:xxx,yyy"
+                good_list = []
+                bad_list = []
                 for i in xrange(xlist.count()):
                     model = xlist.get_name(i)
                     path = xlist.get_value(i)
+                    #print model, path
                     if re.match(r'usb:\d{3},\d{3}', path):
+                        good_list.append((model, path))
+                    elif path == 'usb:':
+                        bad_list.append((model, path))
+                if len(good_list):
+                    for model, path in good_list:
                         self.append(model, path)
+                elif len(bad_list) == 1:
+                    model, path = bad_list[0]
+                    self.append(model, path)
+                # end USB bug code
+
                 del al
                 del il
                 del xlist
@@ -554,7 +568,7 @@ class cameraList(object):
         contents = ["%d: (%s, %s)" % (i, self.get_name(i), self.get_value(i))
             for i in range(self.count())]
 
-        return header + string.join(contents, "\n")
+        return header + '\n'.join(contents)
 
     def toList(self):
         return [(self.get_name(i), self.get_value(i)) for i in xrange(self.count())]
@@ -755,7 +769,7 @@ class cameraWidget(object):
         for c in self.children:
             childs.append("  - " + c.name + ": " + c.label)
         if len(childs):
-            childstr = "Children:\n" + string.join(childs, "\n")
+            childstr = "Children:\n" + '\n'.join(childs)
             return label + "\n" + info + "\n" + type + "\n" + childstr
         else:
             return label + "\n" + info + "\n" + type
