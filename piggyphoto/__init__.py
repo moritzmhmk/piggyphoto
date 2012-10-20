@@ -22,7 +22,9 @@ libgphoto2dll = 'libgphoto2.so'
 import re
 import ctypes
 gp = ctypes.CDLL(libgphoto2dll)
-context = gp.gp_context_new()
+# Needed to ensure context memory address is not truncated to 32 bits
+gp.gp_context_new.restype = ctypes.c_void_p
+context = ctypes.c_void_p(gp.gp_context_new())
 
 def library_version(verbose = True):
     gp.gp_library_version.restype = ctypes.POINTER(ctypes.c_char_p)
