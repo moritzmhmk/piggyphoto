@@ -18,7 +18,18 @@ unmount_cmd = 'gvfs-mount -s gphoto2'
 #libgphoto2dll = 'libgphoto2.so.2.4.0'
 #libgphoto2dll = 'libgphoto2.so.2.4'
 #libgphoto2dll = 'libgphoto2.so.2'
-libgphoto2dll = 'libgphoto2.so'
+#libgphoto2dll = 'libgphoto2.dylib'
+
+import sys
+
+# Should search more locations for libgphoto2 - especially improperly installed homebrew installations (/usr/local/lib)
+if sys.platform == 'darwin':
+    libgphoto2dll = 'libgphoto2.dylib'
+    # need to kill PTPCamera before use
+elif sys.platform == 'linux2':
+    libgphoto2dl = "libgphoto2.so"
+else:
+    raise Exception("Platform not supported by gphoto2.")
 
 import re
 import ctypes
@@ -235,9 +246,16 @@ class Camera(object):
         self.init()
 
     def __del__(self):
-        if not self._leave_locked:
+        #not sure about this one
+        #if not self._leave_locked:
             _check_result(gp.gp_camera_exit(self._cam))
             _check_result(gp.gp_camera_free(self._cam))
+
+    def __enter__(self):
+        return self
+        
+    def __exit__(self):
+        self.__del__()
 
     def leave_locked(self):
         self._leave_locked = True
