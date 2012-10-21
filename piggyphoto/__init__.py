@@ -10,6 +10,7 @@
 # Retries are performed on: camera.capture_preview, camera.capture_image and camera.init()
 retries = 1
 
+# WHAT DOES THIS EVEN DO
 # This is run if gp_camera_init returns -60 (Could not lock the device) and retries >= 1.
 unmount_cmd = 'gvfs-mount -s gphoto2'
 
@@ -751,8 +752,8 @@ class CameraWidget(object):
         min, max, increment = range
         _check_result(gp.gp_widget_set_range(self._w, float(min), float(max), float(increment)))
         return w
-    def _get_range(self, range):
-        """cameraWidget.range => (min, max, increment)"""
+    def _get_range(self):
+        """CameraWidget.range => (min, max, increment)"""
         min, max, increment = ctypes.c_float(), ctypes.c_float(), ctypes.c_float()
         _check_result(gp.gp_widget_set_range(self._w, byref(min), byref(max), byref(increment)))
         return (min.value, max.value, increment.value)
@@ -761,13 +762,20 @@ class CameraWidget(object):
     def add_choice(self, choice):
         _check_result(gp.gp_widget_add_choice(self._w, str(choice)))
 
-    def count_choices(self, choice):
+    def count_choices(self):
         return gp.gp_widget_count_choices(self._w)
 
     def get_choice(self, choice_number):
         choice = ctypes.c_char_p()
         _check_result(gp.gp_widget_get_choice(self._w, int(choice_number), byref(choice)))
         return choice.value
+
+    def _get_choices(self):
+        choices = []
+        for i in range(self.count_choices()):
+            choices.append(self.get_choice(i))
+        return choices
+    choices = property(_get_choices, None)
 
     def createdoc(self):
         label = "Label: " + self.label
