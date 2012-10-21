@@ -112,7 +112,7 @@ GP_PORT_SERIAL = 1
 GP_PORT_USB = 2
 
 
-class CameraAbilities(ctypes.Structure):
+class _CameraAbilities(ctypes.Structure):
     _fields_ = [('model', (ctypes.c_char * 128)),
                 ('status', ctypes.c_int),
                 ('port', ctypes.c_int),
@@ -171,7 +171,8 @@ GP_WIDGET_BUTTON = 7  # Button press widget.
 GP_WIDGET_DATE = 8    # Date entering widget.
 widget_types = ['Window', 'Section', 'Text', 'Range', 'Toggle', 'Radio', 'Menu', 'Button', 'Date']
 
-class CameraWidget(ctypes.Structure):
+# Unused
+class _CameraWidget(ctypes.Structure):
     _fields_ = [('type', ctypes.c_int),
                 ('label', (ctypes.c_char * 256)),
                 ('info', (ctypes.c_char * 1024)),
@@ -456,7 +457,7 @@ class CameraAbilitiesList(object):
 
 class CameraAbilities(object):
     def __init__(self):
-        self._ab = CameraAbilities()
+        self._ab = _CameraAbilities()
 
     def __repr__(self):
         return "Model : %s\nStatus : %d\nPort : %d\nOperations : %d\nFile Operations : %d\nFolder Operations : %d\nUSB (vendor/product) : 0x%x/0x%x\nUSB class : 0x%x/0x%x/0x%x\nLibrary : %s\nId : %s\n" % (self._ab.model, self._ab.status, self._ab.port, self._ab.operations, self._ab.file_operations, self._ab.folder_operations, self._ab.usb_vendor, self._ab.usb_product, self._ab.usb_class, self._ab.usb_subclass, self._ab.usb_protocol, self._ab.library, self._ab.id)
