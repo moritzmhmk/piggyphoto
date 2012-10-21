@@ -5,7 +5,7 @@ import time
 
 # doesn't work...
 
-C = pp.camera()
+C = pp.Camera()
 C.leave_locked()
 
 #print C.abilities

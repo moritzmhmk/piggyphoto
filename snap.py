@@ -1,6 +1,6 @@
 import piggyphoto
 
-C = piggyphoto.camera()
+C = piggyphoto.Camera()
 
 print C.abilities
 C.capture_preview('preview.jpg')
