@@ -217,12 +217,12 @@ def _check_unref(result, camfile):
         raise libgphoto2error(result, message)
 
 class Camera(object):
-    def __init__(self, autoInit = True):
+    def __init__(self, auto_init = True):
         self._cam = ctypes.c_void_p()
         self._leave_locked = False
         _check_result(gp.gp_camera_new(byref(self._cam)))
         self.initialized = False
-        if autoInit:
+        if auto_init:
             self.init()
 
     def init(self):
@@ -242,21 +242,20 @@ class Camera(object):
         self.initialized = True
 
     def reinit(self):
-        gp.gp_camera_free(self._cam)
+        self.close()
         self.__new__()
         self.init()
 
     def __del__(self):
-        #not sure about this one
-        #if not self._leave_locked:
-            _check_result(gp.gp_camera_exit(self._cam))
-            _check_result(gp.gp_camera_free(self._cam))
+        #not sure about this one - why would you use it
+        if not self._leave_locked:
+            self.close()
 
     def __enter__(self):
         return self
         
     def __exit__(self):
-        self.__del__()
+        self.close()
 
     def leave_locked(self):
         self._leave_locked = True
@@ -267,9 +266,21 @@ class Camera(object):
     def unref(self):
         _check_result(gp.gp_camera_unref(self._cam))
 
-    def exit(self):
+    def _exit(self):
         _check_result(gp.gp_camera_exit(self._cam, context))
 
+    def _free(self):
+        _check_result(gp.gp_camera_free(self._cam))
+
+    def close(self):
+        if self.initialized:
+            self._exit()
+            self._free()
+            self.initialized = False
+
+    #def _init_man(self):
+        
+        
     def _get_summary(self):
         txt = CameraText()
         _check_result(gp.gp_camera_get_summary(self._cam, byref(txt), context))
@@ -280,7 +291,7 @@ class Camera(object):
         txt = CameraText()
         _check_result(gp.gp_camera_get_manual(self._cam, byref(txt), context))
         return txt.text
-    manual = property(_get_manual, None)
+    #manual = property(_get_manual, None) CHECK FOR ERROR ON CALL
 
     def _get_about(self):
         txt = CameraText()
@@ -296,20 +307,20 @@ class Camera(object):
         _check_result(gp.gp_camera_set_abilities(self._cam, ab._ab))
     abilities = property(_get_abilities, _set_abilities)
 
-    def _get_config(self):
+    def get_config(self):
         window = CameraWidget(GP_WIDGET_WINDOW)
         _check_result(gp.gp_camera_get_config(self._cam, byref(window._w), context))
         window.populate_children()
         return window
-    def _set_config(self, window):
+    def set_config(self, window):
         _check_result(gp.gp_camera_set_config(self._cam, window._w, context))
-    config = property(_get_config, _set_config)
+    config = property(get_config, set_config)
 
     def _get_port_info(self):
         raise NotImplementedError
     def _set_port_info(self, info):
         _check_result(gp.gp_camera_set_port_info(self._cam, info))
-    port_info = property(_get_port_info, _set_port_info)
+    #port_info = property(_get_port_info, _set_port_info)
 
     def capture_image(self, destpath = None):
         path = CameraFilePath()
@@ -396,8 +407,15 @@ class CameraFile(object):
         _check_result(gp.gp_file_open(byref(self._cf), filename))
 
     def save(self, filename = None):
-        if filename is None: filename = self.name
-        _check_result(gp.gp_file_save(self._cf, filename))
+        if filename is None:
+            filename = self.name
+        
+        # deprcated as of libgphoto2 2.5.0
+        #_check_result(gp.gp_file_save(self._cf, filename))
+        
+        file = open(filename, 'wb')
+        file.write(self.to_pixbuf())
+        file.close()
 
     def ref(self):
         _check_result(gp.gp_file_ref(self._cf))
@@ -411,12 +429,19 @@ class CameraFile(object):
     def copy(self, source):
         _check_result(gp.gp_file_copy(self._cf, source._cf))
 
+    # do we need this?
     def to_pixbuf(self):
+        mimetype = ctypes.c_char_p()
+        gp.gp_file_get_mime_type(self._cf, ctypes.byref(mimetype))
+        print ctypes.string_at(mimetype)
+        
         """Returns data for GdkPixbuf.PixbufLoader.write()."""
         data = ctypes.c_char_p()
         size = ctypes.c_ulong()
         gp.gp_file_get_data_and_size(self._cf, ctypes.byref(data),
                                      ctypes.byref(size))
+                                     
+        print size.value
         return ctypes.string_at(data, size.value)
 
     def __dealoc__(self, filename):
@@ -835,3 +860,5 @@ class CameraWidget(object):
 
 class CameraWidgetSimple(object):
     pass
+
+

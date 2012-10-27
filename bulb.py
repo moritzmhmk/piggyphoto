@@ -25,5 +25,7 @@ print C.config.main.actions.bulb
 #for i in range(10):
 #C.capture_preview('preview.jpg')
 
+C.close()
+
 print "done"
 

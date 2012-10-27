@@ -4,4 +4,4 @@ cam = pp.Camera()
 
 print cam.config.main.capturesettings.shutterspeed.choices
 
-cam.exit()
+cam.close()

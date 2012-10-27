@@ -53,3 +53,5 @@ while not quit_pressed():
                 Q = deque()
                 time.sleep(1)
                 looking_for_peak = True
+
+C.close()
