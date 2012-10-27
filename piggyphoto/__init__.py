@@ -21,10 +21,12 @@ unmount_cmd = 'gvfs-mount -s gphoto2'
 #libgphoto2dll = 'libgphoto2.dylib'
 
 import sys
-
+import os
 # Should search more locations for libgphoto2 - especially improperly installed homebrew installations (/usr/local/lib)
 if sys.platform == 'darwin':
     libgphoto2dll = 'libgphoto2.dylib'
+    # kill PTPCamera to free camera lock
+    os.system("killall PTPCamera")
     # need to kill PTPCamera before use
 elif sys.platform == 'linux2':
     libgphoto2dl = "libgphoto2.so"
@@ -53,7 +55,7 @@ def library_version(verbose = True):
         v += '%s\n' % s
     return v
 
-import os, time
+import time
 from ptp import *
 
 # gphoto structures
