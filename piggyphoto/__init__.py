@@ -29,7 +29,7 @@ if sys.platform == 'darwin':
     os.system("killall PTPCamera")
     # need to kill PTPCamera before use
 elif sys.platform == 'linux2':
-    libgphoto2dl = "libgphoto2.so"
+    libgphoto2dll = "libgphoto2.so"
 else:
     raise Exception("Platform not supported by gphoto2.")
 
