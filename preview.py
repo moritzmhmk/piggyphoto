@@ -13,7 +13,7 @@ def show(file):
     main_surface.blit(picture, (0, 0))
     pygame.display.flip()
 
-C = piggyphoto.camera()
+C = piggyphoto.Camera()
 C.leave_locked()
 C.capture_preview('preview.jpg')
 

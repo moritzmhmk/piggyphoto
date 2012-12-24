@@ -1,6 +1,7 @@
 import piggyphoto
 
-C = piggyphoto.camera()
+C = piggyphoto.Camera()
 print C.abilities
 C.list_config()
 
+C.close()

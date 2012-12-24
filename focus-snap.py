@@ -18,7 +18,7 @@ def show(file):
     main_surface.blit(picture, (0, 0))
     pygame.display.flip()
 
-C = piggyphoto.camera()
+C = piggyphoto.Camera()
 C.leave_locked()
 C.capture_preview('preview.jpg')
 
@@ -53,3 +53,5 @@ while not quit_pressed():
                 Q = deque()
                 time.sleep(1)
                 looking_for_peak = True
+
+C.close()

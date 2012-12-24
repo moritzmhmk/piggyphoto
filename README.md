@@ -12,7 +12,7 @@ You have to install [libgphoto2](http://www.gphoto.org/proj/libgphoto2/). It sho
 
     import piggyphoto
     
-    C = piggyphoto.camera()
+    C = piggyphoto.Camera()
     print C.abilities
     C.capture_preview('preview.jpg')
     C.capture_image('image.jpg')

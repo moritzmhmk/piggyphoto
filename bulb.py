@@ -5,7 +5,7 @@ import time
 
 # doesn't work...
 
-C = pp.camera()
+C = pp.Camera()
 C.leave_locked()
 
 #print C.abilities
@@ -24,6 +24,8 @@ print C.config.main.actions.bulb
 #print dir(cfg.main)
 #for i in range(10):
 #C.capture_preview('preview.jpg')
+
+C.close()
 
 print "done"
 
