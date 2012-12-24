@@ -717,29 +717,30 @@ class CameraWidget(object):
     label = property(_get_label, _set_label)
 
     def _get_value(self):
-        value = ctypes.c_void_p()
-        ans = gp.gp_widget_get_value(self._w, byref(value))
         if self.type in [GP_WIDGET_MENU, GP_WIDGET_RADIO, GP_WIDGET_TEXT]:
-            value = ctypes.cast(value.value, ctypes.c_char_p)
+            value = ctypes.c_char_p()
         elif self.type == GP_WIDGET_RANGE:
-            value = ctypes.cast(value.value, ctypes.POINTER(ctypes.c_float))
+            value = ctypes.c_float()
         elif self.type in [GP_WIDGET_TOGGLE, GP_WIDGET_DATE]:
-            #value = ctypes.cast(value.value, ctypes.c_int_p)
-            pass
+            value = ctypes.c_int()
         else:
-            return None
-        _check_result(ans)
+            raise NotImplementedError()
+            
+        _check_result(gp.gp_widget_get_value(self._w, byref(value)))
         return value.value
+        
     def _set_value(self, value):
         if self.type in (GP_WIDGET_MENU, GP_WIDGET_RADIO, GP_WIDGET_TEXT):
             value = ctypes.c_char_p(value)
         elif self.type == GP_WIDGET_RANGE:
-            value = ctypes.c_float_p(value) # this line not tested
+            value = byref(ctypes.c_float(value))
         elif self.type in (GP_WIDGET_TOGGLE, GP_WIDGET_DATE):
             value = byref(ctypes.c_int(value))
         else:
-            return None # this line not tested
+            raise NotImplementedError()
+            
         _check_result(gp.gp_widget_set_value(self._w, value))
+        
     value = property(_get_value, _set_value)
 
     def append(self, child):
