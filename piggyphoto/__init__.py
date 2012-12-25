@@ -56,7 +56,7 @@ def library_version(verbose = True):
     return v
 
 import time
-from ptp import *
+from .ptp import *
 
 # gphoto structures
 """ From 'gphoto2-camera.h'
@@ -229,17 +229,17 @@ class Camera(object):
 
     def init(self):
         if self.initialized:
-            print "Camera is already initialized."
+            print("Camera is already initialized.")
         ans = 0
         for i in range(1 + retries):
             ans = gp.gp_camera_init(self._cam, context)
             if ans == 0:
                 break
             elif ans == -60:
-                print "***", unmount_cmd
+                print("***", unmount_cmd)
                 os.system(unmount_cmd)
                 time.sleep(1)
-                print "Camera.init() retry #%d..." % (i)
+                print("Camera.init() retry #%d..." % (i))
         _check_result(ans)
         self.initialized = True
 
@@ -331,7 +331,7 @@ class Camera(object):
         for i in range(1 + retries):
             ans = gp.gp_camera_capture(self._cam, GP_CAPTURE_IMAGE, byref(path), context)
             if ans == 0: break
-            else: print "capture_image(%s) retry #%d..." % (destpath, i)
+            else: print("capture_image(%s) retry #%d..." % (destpath, i))
         _check_result(ans)
 
         if destpath:
@@ -347,7 +347,7 @@ class Camera(object):
         for i in range(1 + retries):
             ans = gp.gp_camera_capture_preview(self._cam, cfile._cf, context)
             if ans == 0: break
-            else: print "capture_preview(%s) retry #%d..." % (destpath, i)
+            else: print("capture_preview(%s) retry #%d..." % (destpath, i))
         _check_result(ans)
 
         if destpath:
@@ -382,7 +382,7 @@ class Camera(object):
             for c in children:
                 self._list_config(c, cfglist, path + "." + c.name)
         else:
-            print "%-40s = %-20s %40s" % (path, widget.value, "(%s)" % widget.label)
+            print("%-40s = %-20s %40s" % (path, widget.value, "(%s)" % widget.label))
             #print path, "=", widget.value, ("(%s)" % widget.label).rjust(40)
             cfglist.append(path)
 
@@ -436,7 +436,7 @@ class CameraFile(object):
     def to_pixbuf(self):
         mimetype = ctypes.c_char_p()
         gp.gp_file_get_mime_type(self._cf, ctypes.byref(mimetype))
-        print ctypes.string_at(mimetype)
+        print(ctypes.string_at(mimetype))
         
         """Returns data for GdkPixbuf.PixbufLoader.write()."""
         data = ctypes.c_char_p()
@@ -444,7 +444,7 @@ class CameraFile(object):
         gp.gp_file_get_data_and_size(self._cf, ctypes.byref(data),
                                      ctypes.byref(size))
                                      
-        print size.value
+        print(size.value)
         return ctypes.string_at(data, size.value)
 
     def __dealoc__(self, filename):
@@ -554,7 +554,7 @@ class CameraList(object):
                 # one path "usb:" and sometimes two paths "usb:" and "usb:xxx,yyy"
                 good_list = []
                 bad_list = []
-                for i in xrange(xlist.count()):
+                for i in range(xlist.count()):
                     model = xlist.get_name(i)
                     path = xlist.get_value(i)
                     #print model, path
@@ -628,7 +628,7 @@ class CameraList(object):
         return header + '\n'.join(contents)
 
     def toList(self):
-        return [(self.get_name(i), self.get_value(i)) for i in xrange(self.count())]
+        return [(self.get_name(i), self.get_value(i)) for i in range(self.count())]
         xlist = []
         for i in range(self.count()):
             n, v = self.get_name(i), self.get_value(i)

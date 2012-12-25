@@ -12,13 +12,13 @@ C.leave_locked()
 #C.list_config()
 
 C.config.main.imgsettings.iso.value = 3
-print C.config.main.imgsettings.iso
+print(C.config.main.imgsettings.iso)
 
 C.config.main.actions.bulb.value = 1
-print C.config.main.actions.bulb
+print(C.config.main.actions.bulb)
 time.sleep(1)
-print C.config.main.actions.bulb.value
-print C.config.main.actions.bulb
+print(C.config.main.actions.bulb.value)
+print(C.config.main.actions.bulb)
 
 #print dir(C.config.main.actions)
 #print dir(cfg.main)
@@ -27,5 +27,5 @@ print C.config.main.actions.bulb
 
 C.close()
 
-print "done"
+print("done")
 
