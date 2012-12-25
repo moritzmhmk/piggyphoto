@@ -39,6 +39,7 @@ from ctypes import byref
 gp = ctypes.CDLL(libgphoto2dll)
 # Needed to ensure context memory address is not truncated to 32 bits
 gp.gp_context_new.restype = ctypes.c_void_p
+
 context = ctypes.c_void_p(gp.gp_context_new())
 
 def library_version(verbose = True):
@@ -54,6 +55,8 @@ def library_version(verbose = True):
             break
         v += '%s\n' % s
     return v
+
+#ctypes.c_char_p = c_char_p
 
 import time
 from .ptp import *
@@ -286,19 +289,19 @@ class Camera(object):
     def _get_summary(self):
         txt = CameraText()
         _check_result(gp.gp_camera_get_summary(self._cam, byref(txt), context))
-        return txt.text
+        return txt.text.decode("utf-8")
     summary = property(_get_summary, None)
 
     def _get_manual(self):
         txt = CameraText()
         _check_result(gp.gp_camera_get_manual(self._cam, byref(txt), context))
-        return txt.text
+        return txt.text.decode("utf-8")
     #manual = property(_get_manual, None) CHECK FOR ERROR ON CALL
 
     def _get_about(self):
         txt = CameraText()
         _check_result(gp.gp_camera_get_about(self._cam, byref(txt), context))
-        return txt.text
+        return txt.text.decode("utf-8")
     about = property(_get_about, None)
 
     def _get_abilities(self):
@@ -382,7 +385,8 @@ class Camera(object):
             for c in children:
                 self._list_config(c, cfglist, path + "." + c.name)
         else:
-            print("%-40s = %-20s %40s" % (path, widget.value, "(%s)" % widget.label))
+            widget.dump(path)
+            #print("%-40s = %-20s %40s" % (path, widget.value, "(%s)" % widget.label))
             #print path, "=", widget.value, ("(%s)" % widget.label).rjust(40)
             cfglist.append(path)
 
@@ -453,7 +457,7 @@ class CameraFile(object):
     def _get_name(self):
         name = ctypes.c_char_p()
         _check_result(gp.gp_file_get_name(self._cf, byref(name)))
-        return name.value
+        return name.value.decode("utf-8")
     def _set_name(self, name):
         _check_result(gp.gp_file_set_name(self._cf, str(name)))
     name = property(_get_name, _set_name)
@@ -488,9 +492,9 @@ class CameraAbilities(object):
         self._ab = _CameraAbilities()
 
     def __repr__(self):
-        return "Model : %s\nStatus : %d\nPort : %d\nOperations : %d\nFile Operations : %d\nFolder Operations : %d\nUSB (vendor/product) : 0x%x/0x%x\nUSB class : 0x%x/0x%x/0x%x\nLibrary : %s\nId : %s\n" % (self._ab.model, self._ab.status, self._ab.port, self._ab.operations, self._ab.file_operations, self._ab.folder_operations, self._ab.usb_vendor, self._ab.usb_product, self._ab.usb_class, self._ab.usb_subclass, self._ab.usb_protocol, self._ab.library, self._ab.id)
+        return "Model : %s\nStatus : %d\nPort : %d\nOperations : %d\nFile Operations : %d\nFolder Operations : %d\nUSB (vendor/product) : 0x%x/0x%x\nUSB class : 0x%x/0x%x/0x%x\nLibrary : %s\nId : %s\n" % (self.model, self._ab.status, self._ab.port, self._ab.operations, self._ab.file_operations, self._ab.folder_operations, self._ab.usb_vendor, self._ab.usb_product, self._ab.usb_class, self._ab.usb_subclass, self._ab.usb_protocol, self.library, self.id)
 
-    model = property(lambda self: self._ab.model, None)
+    model = property(lambda self: self._ab.model.decode("utf-8"), None)
     status = property(lambda self: self._ab.status, None)
     port = property(lambda self: self._ab.port, None)
     operations = property(lambda self: self._ab.operations, None)
@@ -501,8 +505,8 @@ class CameraAbilities(object):
     usb_class = property(lambda self: self._ab.usb_class, None)
     usb_subclass = property(lambda self: self._ab.usb_subclass, None)
     usb_protocol = property(lambda self: self._ab.usb_protocol, None)
-    library = property(lambda self: self._ab.library, None)
-    id = property(lambda self: self._ab.id, None)
+    library = property(lambda self: self._ab.library.decode("utf-8"), None)
+    id = property(lambda self: self._ab.id.decode("utf-8"), None)
 
 class PortInfoList(object):
     _static_l = None
@@ -607,12 +611,12 @@ class CameraList(object):
     def get_name(self, index):
         name = ctypes.c_char_p()
         _check_result(gp.gp_list_get_name(self._l, int(index), byref(name)))
-        return name.value
+        return name.value.decode("utf-8")
 
     def get_value(self, index):
         value = ctypes.c_char_p()
         _check_result(gp.gp_list_get_value(self._l, int(index), byref(value)))
-        return value.value
+        return value.value.decode("utf-8")
 
     def set_name(self, index, name):
         _check_result(gp.gp_list_set_name(self._l, int(index), str(name)))
@@ -666,7 +670,7 @@ class CameraWidget(object):
     def _get_info(self):
         info = ctypes.c_char_p()
         _check_result(gp.gp_widget_get_info(self._w, byref(info)))
-        return info.value
+        return info.value.decode("utf-8")
     def _set_info(self, info):
         _check_result(gp.gp_widget_set_info(self._w, str(info)))
     info = property(_get_info, _set_info)
@@ -674,7 +678,7 @@ class CameraWidget(object):
     def _get_name(self):
         name = ctypes.c_char_p()
         _check_result(gp.gp_widget_get_name(self._w, byref(name)))
-        return name.value
+        return name.value.decode("utf-8")
     def _set_name(self, name):
         _check_result(gp.gp_widget_set_name(self._w, str(name)))
     name = property(_get_name, _set_name)
@@ -712,7 +716,7 @@ class CameraWidget(object):
     def _get_label(self):
         label = ctypes.c_char_p()
         _check_result(gp.gp_widget_get_label(self._w, byref(label)))
-        return label.value
+        return label.value.decode("utf-8")
     def _set_label(self, label):
         _check_result(gp.gp_widget_set_label(self._w, str(label)))
     label = property(_get_label, _set_label)
@@ -723,7 +727,10 @@ class CameraWidget(object):
         _check_result(ans)
 
         if self.type in [GP_WIDGET_MENU, GP_WIDGET_RADIO, GP_WIDGET_TEXT]:
-            return ctypes.cast(value.value, ctypes.c_char_p).value
+            v = ctypes.cast(value.value, ctypes.c_char_p).value
+            if v is not None:
+                return v.decode("utf-8")
+            return ""
         elif self.type == GP_WIDGET_RANGE:
             lower, upper, step = ctypes.c_float(), ctypes.c_float(), ctypes.c_float()
             gp.gp_widget_get_range(self._w, byref(lower), byref(upper), byref(step))
@@ -824,7 +831,7 @@ class CameraWidget(object):
     def get_choice(self, choice_number):
         choice = ctypes.c_char_p()
         _check_result(gp.gp_widget_get_choice(self._w, int(choice_number), byref(choice)))
-        return choice.value
+        return choice.value.decode("utf-8")
 
     def _get_choices(self):
         choices = []
@@ -869,6 +876,41 @@ class CameraWidget(object):
 
     def __repr__(self):
         return "%s:%s:%s:%s:%s" % (self.label, self.name, self.info, self.typestr, self.value)
+
+    def dump(self, path):
+        value = str(self.value)
+        label = str(self.label)
+
+        space = 60 - len(value) - 2
+        print("%-40s = %s%s" % (path, value, ("(%s)" % label).rjust(space)))
+
+        if self.type in [GP_WIDGET_MENU, GP_WIDGET_RADIO, GP_WIDGET_TEXT] and self.choices:
+            numeric = True
+            for x in self.choices:
+                try:
+                    int(x)
+                except ValueError:
+                    numeric = False
+                    break
+
+            print("    ", end="")
+            if numeric:
+                lower, upper = int(self.choices[0]), int(self.choices[-1])
+                r = range(lower, upper)
+                count = 0
+                
+                for x in self.choices:
+                    if int(x) in r:
+                        count += 1
+
+                if count == len(r):
+                    print(" "*55, "[%s … %s]" % (lower, upper))
+                else:
+                    print(str(self.choices))
+            else:
+                print(str(self.choices))
+        elif self.type == GP_WIDGET_RANGE:
+            print(str(self.range))
 
 class CameraWidgetSimple(object):
     pass
