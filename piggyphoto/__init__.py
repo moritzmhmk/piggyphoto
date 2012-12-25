@@ -202,7 +202,7 @@ class libgphoto2error(Exception):
         self.result = result
         self.message = message
     def __str__(self):
-        return self.message + ' (' + str(self.result) + ')'
+        return "%s (%s)" % (self.message, self.result)
 
 def _check_result(result):
     if result < 0:
@@ -382,7 +382,8 @@ class Camera(object):
             for c in children:
                 self._list_config(c, cfglist, path + "." + c.name)
         else:
-            print path, "=", widget.value
+            print "%-40s = %-20s %40s" % (path, widget.value, "(%s)" % widget.label)
+            #print path, "=", widget.value, ("(%s)" % widget.label).rjust(40)
             cfglist.append(path)
 
     def list_config(self):
@@ -719,22 +720,31 @@ class CameraWidget(object):
     def _get_value(self):
         value = ctypes.c_void_p()
         ans = gp.gp_widget_get_value(self._w, byref(value))
+        _check_result(ans)
+
         if self.type in [GP_WIDGET_MENU, GP_WIDGET_RADIO, GP_WIDGET_TEXT]:
-            value = ctypes.cast(value.value, ctypes.c_char_p)
+            return ctypes.cast(value.value, ctypes.c_char_p).value
         elif self.type == GP_WIDGET_RANGE:
-            value = ctypes.cast(value.value, ctypes.POINTER(ctypes.c_float))
+            lower, upper, step = ctypes.c_float(), ctypes.c_float(), ctypes.c_float()
+            gp.gp_widget_get_range(self._w, byref(lower), byref(upper), byref(step))
+
+            return (lower.value, upper.value, step.value)
+
+            #value = ctypes.cast(value.value, ctypes.POINTER(ctypes.c_float))
+            #import collections
+            #value = collections.namedtuple("nnnn", ["value"])(value=0.0)
         elif self.type in [GP_WIDGET_TOGGLE, GP_WIDGET_DATE]:
-            #value = ctypes.cast(value.value, ctypes.c_int_p)
-            pass
+            return None
+            #return ctypes.cast(value, ctypes.POINTER(ctypes.c_int)).contents
         else:
             return None
-        _check_result(ans)
-        return value.value
+
     def _set_value(self, value):
         if self.type in (GP_WIDGET_MENU, GP_WIDGET_RADIO, GP_WIDGET_TEXT):
             value = ctypes.c_char_p(value)
         elif self.type == GP_WIDGET_RANGE:
-            value = ctypes.c_float_p(value) # this line not tested
+            raise NotImplementedError()
+            #value = ctypes.c_float_p(value) # this line not tested
         elif self.type in (GP_WIDGET_TOGGLE, GP_WIDGET_DATE):
             value = byref(ctypes.c_int(value))
         else:
