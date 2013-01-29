@@ -750,8 +750,12 @@ class CameraWidget(object):
         if self.type in (GP_WIDGET_MENU, GP_WIDGET_RADIO, GP_WIDGET_TEXT):
             value = ctypes.c_char_p(value)
         elif self.type == GP_WIDGET_RANGE:
-            raise NotImplementedError()
-            #value = ctypes.c_float_p(value) # this line not tested
+            # According to libgphoto 2.5 docs ( http://enkore.de/libgphoto2-docs/ )
+            # "Please pass (char*) for GP_WIDGET_MENU, GP_WIDGET_TEXT, GP_WIDGET_RADIO,
+            #  (float) for GP_WIDGET_RANGE, (int) for GP_WIDGET_DATE, GP_WIDGET_TOGGLE,
+            #  and (CameraWidgetCallback) for GP_WIDGET_BUTTON.
+            # So this should probably work.
+            value = ctypes.c_float(value)
         elif self.type in (GP_WIDGET_TOGGLE, GP_WIDGET_DATE):
             value = byref(ctypes.c_int(value))
         else:
