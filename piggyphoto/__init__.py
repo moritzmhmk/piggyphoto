@@ -23,12 +23,13 @@ unmount_cmd = 'gvfs-mount -s gphoto2'
 import sys
 import os
 # Should search more locations for libgphoto2 - especially improperly installed homebrew installations (/usr/local/lib)
+
 if sys.platform == 'darwin':
     libgphoto2dll = 'libgphoto2.dylib'
     # kill PTPCamera to free camera lock
     os.system("killall PTPCamera")
     # need to kill PTPCamera before use
-elif sys.platform == 'linux2':
+elif sys.platform.startswith("linux"):
     libgphoto2dll = "libgphoto2.so"
 else:
     raise Exception("Platform not supported by gphoto2.")
