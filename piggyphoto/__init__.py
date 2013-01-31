@@ -766,8 +766,7 @@ class CameraWidget(object):
             #import collections
             #value = collections.namedtuple("nnnn", ["value"])(value=0.0)
         elif self.type in [GP_WIDGET_TOGGLE, GP_WIDGET_DATE]:
-            return None
-            #return ctypes.cast(value, ctypes.POINTER(ctypes.c_int)).contents
+            return ctypes.cast(value, ctypes.POINTER(ctypes.c_int)).value
         else:
             return None
 
@@ -781,11 +780,12 @@ class CameraWidget(object):
             #  (float) for GP_WIDGET_RANGE, (int) for GP_WIDGET_DATE, GP_WIDGET_TOGGLE,
             #  and (CameraWidgetCallback) for GP_WIDGET_BUTTON.
             # So this should probably work.
-            value = ctypes.c_float(value)
+            value = byref(ctypes.c_float(value))
         elif self.type in (GP_WIDGET_TOGGLE, GP_WIDGET_DATE):
             value = byref(ctypes.c_int(value))
         else:
-            return None # this line not tested
+            raise NotImplementedError()
+            
         _check_result(gp.gp_widget_set_value(self._w, value))
 
     def append(self, child):
