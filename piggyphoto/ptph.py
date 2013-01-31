@@ -1,18 +1,16 @@
+#!/usr/bin/python3
+
 import re
 
-f = open("ptp.h")
-out = open("ptp.py", "w")
-out.write("# Constants extracted from gphoto2's ptp.h\n\n")
-lines = f.readlines()
+regex = re.compile(r"^#define\s+([a-zA-Z0-9_]+)\s+(.*)")
 
-for line in lines:
-    line = line.strip()
-    reg = r"^#define\s+([a-zA-Z0-9_]+)\s+(.*)"
-    m = re.match(reg, line)
-    if m:
-        #print line
-        g = m.groups()
-        name, value = g[0], g[1]
-        value = value.replace("/*", "#")
-        value = value.replace("//", "#")
-        out.write("%s = %s\n" % (name, value))
+with open("ptp.py", "w") as out:
+    out.write("# Constants extracted from gphoto2's ptp.h\n\n")
+
+    with open("ptp.h") as inp:
+        for line in (line.strip() for line in inp.readlines() if line.startswith("#define")):
+            match = regex.match(line)
+            if match:
+                name, value = match.groups()
+                value = value.replace("/*", "#").replace("//", "#")
+                out.write("%s = %s\n" % (name, value))

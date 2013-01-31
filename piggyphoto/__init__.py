@@ -1,5 +1,6 @@
 # piggyphoto.py
 # Copyright (C) 2010 Alex Dumitrache
+# Copyright (C) 2012, 2013 Marian Beermann
 # Based on:
 # - a small code example by Mario Boikov, http://pysnippet.blogspot.com/2009/12/when-ctypes-comes-to-rescue.html
 # - libgphoto2 Python bindings by David PHAM-VAN <david@ab2r.com>
@@ -10,8 +11,9 @@
 # Retries are performed on: camera.capture_preview, camera.capture_image and camera.init()
 retries = 1
 
-# WHAT DOES THIS EVEN DO
 # This is run if gp_camera_init returns -60 (Could not lock the device) and retries >= 1.
+# It unmounts all fs related to gphoto2. If one mounts his camera with gphoto2 gvfs, then
+# it locks the device.
 unmount_cmd = 'gvfs-mount -s gphoto2'
 
 #libgphoto2dll = 'libgphoto2.so.6'
