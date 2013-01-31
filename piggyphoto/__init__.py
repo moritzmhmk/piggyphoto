@@ -285,47 +285,53 @@ class Camera(object):
 
     #def _init_man(self):
         
-        
-    def _get_summary(self):
+    @property
+    def summary(self):
         txt = CameraText()
         _check_result(gp.gp_camera_get_summary(self._cam, byref(txt), context))
         return txt.text.decode("utf-8")
-    summary = property(_get_summary, None)
 
-    def _get_manual(self):
+    @property
+    def manual(self):
+        # TODO: CHECK FOR ERROR ON CALL
         txt = CameraText()
         _check_result(gp.gp_camera_get_manual(self._cam, byref(txt), context))
         return txt.text.decode("utf-8")
-    #manual = property(_get_manual, None) CHECK FOR ERROR ON CALL
 
-    def _get_about(self):
+    @property
+    def about(self):
         txt = CameraText()
         _check_result(gp.gp_camera_get_about(self._cam, byref(txt), context))
         return txt.text.decode("utf-8")
-    about = property(_get_about, None)
 
-    def _get_abilities(self):
+    @property
+    def abilities(self):
         ab = CameraAbilities()
         _check_result(gp.gp_camera_get_abilities(self._cam, byref(ab._ab)))
         return ab
-    def _set_abilities(self, ab):
+    
+    @abilities.setter
+    def abilities(self, ab):
         _check_result(gp.gp_camera_set_abilities(self._cam, ab._ab))
-    abilities = property(_get_abilities, _set_abilities)
 
-    def get_config(self):
+    @property
+    def config(self):
         window = CameraWidget(GP_WIDGET_WINDOW)
         _check_result(gp.gp_camera_get_config(self._cam, byref(window._w), context))
         window.populate_children()
         return window
+
+    @config.setter
     def set_config(self, window):
         _check_result(gp.gp_camera_set_config(self._cam, window._w, context))
-    config = property(get_config, set_config)
 
-    def _get_port_info(self):
+    @property
+    def port_info(self):
         raise NotImplementedError
-    def _set_port_info(self, info):
+
+    @port_info.setter
+    def port_info(self, info):
         _check_result(gp.gp_camera_set_port_info(self._cam, info))
-    #port_info = property(_get_port_info, _set_port_info)
 
     def capture_image(self, destpath = None):
         path = CameraFilePath()
@@ -454,13 +460,15 @@ class CameraFile(object):
     def __dealoc__(self, filename):
         _check_result(gp.gp_file_free(self._cf))
 
-    def _get_name(self):
+    @property
+    def name(self):
         name = ctypes.c_char_p()
         _check_result(gp.gp_file_get_name(self._cf, byref(name)))
         return name.value.decode("utf-8")
-    def _set_name(self, name):
+
+    @name.setter
+    def name(self, name):
         _check_result(gp.gp_file_set_name(self._cf, str(name)))
-    name = property(_get_name, _set_name)
 
     # TODO: new_from_fd (?), new_from_handler (?), mime_tipe, mtime, detect_mime_type, adjust_name_for_mime_type, data_and_size, append, slurp, python file object?
 
@@ -655,6 +663,9 @@ class CameraWidget(object):
         else:
             self._w = ctypes.c_void_p()
 
+    def __repr__(self):
+        return "%s:%s:%s:%s:%s" % (self.label, self.name, self.info, self.typestr, self.value)
+
     def ref(self):
         _check_result(gp.gp_widget_ref(self._w))
 
@@ -667,61 +678,72 @@ class CameraWidget(object):
         #_check_result(gp.gp_widget_unref(self._w))
         pass
 
-    def _get_info(self):
+    @property
+    def info(self):
         info = ctypes.c_char_p()
         _check_result(gp.gp_widget_get_info(self._w, byref(info)))
         return info.value.decode("utf-8")
-    def _set_info(self, info):
-        _check_result(gp.gp_widget_set_info(self._w, str(info)))
-    info = property(_get_info, _set_info)
 
-    def _get_name(self):
+    @info.setter
+    def info(self, info):
+        _check_result(gp.gp_widget_set_info(self._w, str(info)))
+
+    @property
+    def name(self):
         name = ctypes.c_char_p()
         _check_result(gp.gp_widget_get_name(self._w, byref(name)))
         return name.value.decode("utf-8")
-    def _set_name(self, name):
-        _check_result(gp.gp_widget_set_name(self._w, str(name)))
-    name = property(_get_name, _set_name)
 
-    def _get_id(self):
+    @name.setter
+    def name(self, name):
+        _check_result(gp.gp_widget_set_name(self._w, str(name)))
+
+    @property
+    def id(self):
         id = ctypes.c_int()
         _check_result(gp.gp_widget_get_id(self._w, byref(id)))
         return id.value
-    id = property(_get_id, None)
 
+    @property
+    def changed(self):
+        return gp.gp_widget_changed(self._w)
+
+    @changed.setter
     def _set_changed(self, changed):
         _check_result(gp.gp_widget_set_changed(self._w, str(changed)))
-    def _get_changed(self):
-        return gp.gp_widget_changed(self._w)
-    changed = property(_get_changed, _set_changed)
 
-    def _get_readonly(self):
+    @property
+    def readonly(self):
         readonly = ctypes.c_int()
         _check_result(gp.gp_widget_get_readonly(self._w, byref(readonly)))
         return readonly.value
-    def _set_readonly(self, readonly):
+    
+    @readonly.setter
+    def readonly(self, readonly):
         _check_result(gp.gp_widget_set_readonly(self._w, int(readonly)))
-    readonly = property(_get_readonly, _set_readonly)
 
-    def _get_type(self):
+    @property
+    def type(self):
         type = ctypes.c_int()
         _check_result(gp.gp_widget_get_type(self._w, byref(type)))
         return type.value
-    type = property(_get_type, None)
 
-    def _get_typestr(self):
+    @property
+    def typestr(self):
         return widget_types[self.type]
-    typestr = property(_get_typestr, None)
 
-    def _get_label(self):
+    @property
+    def label(self):
         label = ctypes.c_char_p()
         _check_result(gp.gp_widget_get_label(self._w, byref(label)))
         return label.value.decode("utf-8")
-    def _set_label(self, label):
-        _check_result(gp.gp_widget_set_label(self._w, str(label)))
-    label = property(_get_label, _set_label)
 
-    def _get_value(self):
+    @label.setter
+    def label(self, label):
+        _check_result(gp.gp_widget_set_label(self._w, str(label)))
+
+    @property
+    def value(self):
         value = ctypes.c_void_p()
         ans = gp.gp_widget_get_value(self._w, byref(value))
         _check_result(ans)
@@ -746,7 +768,8 @@ class CameraWidget(object):
         else:
             return None
 
-    def _set_value(self, value):
+    @value.setter
+    def value(self, value):
         if self.type in (GP_WIDGET_MENU, GP_WIDGET_RADIO, GP_WIDGET_TEXT):
             value = ctypes.c_char_p(value)
         elif self.type == GP_WIDGET_RANGE:
@@ -761,7 +784,6 @@ class CameraWidget(object):
         else:
             return None # this line not tested
         _check_result(gp.gp_widget_set_value(self._w, value))
-    value = property(_get_value, _set_value)
 
     def append(self, child):
         _check_result(gp.gp_widget_append(self._w, child._w))
@@ -794,37 +816,39 @@ class CameraWidget(object):
         _check_result(gp.gp_widget_get_child_by_name(self._w, str(name), byref(w._w)))
         return w
 
-    def _get_children(self):
+    @property
+    def children(self):
         children = []
         for i in range(self.count_children()):
             children.append(self.get_child(i))
         return children
-    children = property(_get_children, None)
 
-    def _get_parent(self):
+    @property
+    def parent(self):
         w = CameraWidget()
         _check_result(gp.gp_widget_get_parent(self._w, byref(w._w)))
         return w
-    parent = property(_get_parent, None)
 
-    def _get_root(self):
+    @property 
+    def root(self):
         w = CameraWidget()
         _check_result(gp.gp_widget_get_root(self._w, byref(w._w)))
         return w
-    root = property(_get_root, None)
 
-    def _set_range(self, range):
+    @property
+    def range(self):
+        """CameraWidget.range => (min, max, increment)"""
+        min, max, increment = ctypes.c_float(), ctypes.c_float(), ctypes.c_float()
+        _check_result(gp.gp_widget_set_range(self._w, byref(min), byref(max), byref(increment)))
+        return (min.value, max.value, increment.value)
+
+    @range.setter
+    def range(self, range):
         """CameraWidget.range = (min, max, increment)"""
         float = ctypes.c_float
         min, max, increment = range
         _check_result(gp.gp_widget_set_range(self._w, float(min), float(max), float(increment)))
         return w
-    def _get_range(self):
-        """CameraWidget.range => (min, max, increment)"""
-        min, max, increment = ctypes.c_float(), ctypes.c_float(), ctypes.c_float()
-        _check_result(gp.gp_widget_set_range(self._w, byref(min), byref(max), byref(increment)))
-        return (min.value, max.value, increment.value)
-    range = property(_get_range, _set_range)
 
     def add_choice(self, choice):
         _check_result(gp.gp_widget_add_choice(self._w, str(choice)))
@@ -837,12 +861,12 @@ class CameraWidget(object):
         _check_result(gp.gp_widget_get_choice(self._w, int(choice_number), byref(choice)))
         return choice.value.decode("utf-8")
 
-    def _get_choices(self):
+    @property
+    def choices(self):
         choices = []
         for i in range(self.count_choices()):
             choices.append(self.get_choice(i))
         return choices
-    choices = property(_get_choices, None)
 
     def createdoc(self):
         label = "Label: " + self.label
@@ -877,9 +901,6 @@ class CameraWidget(object):
         setattr(self, self.name, simplewidget)
         simplewidget.__doc__ = self.createdoc()
         self._pop(simplewidget)
-
-    def __repr__(self):
-        return "%s:%s:%s:%s:%s" % (self.label, self.name, self.info, self.typestr, self.value)
 
     def dump(self, path):
         value = str(self.value)
