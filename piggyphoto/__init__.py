@@ -766,7 +766,7 @@ class CameraWidget(object):
             #import collections
             #value = collections.namedtuple("nnnn", ["value"])(value=0.0)
         elif self.type in [GP_WIDGET_TOGGLE, GP_WIDGET_DATE]:
-            return ctypes.cast(value, ctypes.POINTER(ctypes.c_int)).value
+            return ctypes.cast(ctypes.addressof(value), ctypes.POINTER(ctypes.c_int))[0]
         else:
             return None
 
