@@ -773,7 +773,7 @@ class CameraWidget(object):
     @value.setter
     def value(self, value):
         if self.type in (GP_WIDGET_MENU, GP_WIDGET_RADIO, GP_WIDGET_TEXT):
-            value = ctypes.c_char_p(value)
+            value = str(value)
         elif self.type == GP_WIDGET_RANGE:
             # According to libgphoto 2.5 docs ( http://enkore.de/libgphoto2-docs/ )
             # "Please pass (char*) for GP_WIDGET_MENU, GP_WIDGET_TEXT, GP_WIDGET_RADIO,
