@@ -325,7 +325,7 @@ class Camera(object):
         return window
 
     @config.setter
-    def set_config(self, window):
+    def config(self, window):
         _check_result(gp.gp_camera_set_config(self._cam, window._w, context))
 
     @property
